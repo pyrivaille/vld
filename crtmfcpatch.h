@@ -91,7 +91,7 @@ public:
     static void* __cdecl mfcd_new (SIZE_T fp, size_t size);
 };
 
-Map<LPCTSTR, HMODULE> hmoduleMap;
+static Map<LPCTSTR, HMODULE> hmoduleMap;
 
 HMODULE GetModuleHandleWithCache(
   LPCTSTR lpModuleName
