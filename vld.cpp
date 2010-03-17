@@ -28,6 +28,8 @@
 #include <cstdio>
 #include <sys/stat.h>
 #include <windows.h>
+#include <wchar.h>
+
 #ifndef __out_xcount
 #define __out_xcount(x) // Workaround for the specstrings.h bug in the Platform SDK.
 #endif
@@ -344,6 +346,7 @@ VisualLeakDetector::~VisualLeakDetector ()
                 // Couldn't query this thread. We'll assume that it exited.
                 continue; // XXX should we check GetLastError()?
             }
+			report(L"Visual Leak Detector: Waiting for thread %d to terminate...\n", (*tlsit)->threadid);
             while (GetExitCodeThread(thread, &exitcode) == TRUE) {
                 if (exitcode != STILL_ACTIVE) {
                     // This thread exited.
@@ -358,10 +361,15 @@ VisualLeakDetector::~VisualLeakDetector ()
                     threadsactive = TRUE;
                     Sleep(100);
                     sleepcount++;
-                    if ((sleepcount % 100) == 0) {
+					if ((sleepcount > 10) && (m_options & VLD_OPT_NO_THREAD_WAIT))
+					{
+						report(L"Visual Leak Detector: Aborting wait for thread %d\n", (*tlsit)->threadid);
+						break;
+					}
+					if ((sleepcount % 100) == 0) {
                         // Just in case this takes a long time, let the human
                         // know we are still here and alive.
-                        report(L"Visual Leak Detector: Waiting for threads to terminate...\n");
+                        report(L"Visual Leak Detector: Waiting for thread %d to terminate...\n", (*tlsit)->threadid);
                     }
                 }
             }
@@ -390,7 +398,13 @@ VisualLeakDetector::~VisualLeakDetector ()
             }
         }
 
-        // Free resources used by the symbol handler.
+        if (m_options & VLD_OPT_NO_THREAD_WAIT)
+        {
+            report(L"Visual Leak Detector: Early exit due to some threads not exiting.\n");
+    		exit(0);
+        }
+
+		// Free resources used by the symbol handler.
         if (!SymCleanup(currentprocess)) {
             report(L"WARNING: Visual Leak Detector: The symbol handler failed to deallocate resources (error=%lu).\n",
                    GetLastError());
@@ -731,6 +745,9 @@ VOID VisualLeakDetector::configure ()
     struct _stat s;
     DWORD        valuetype;
 
+	_wgetcwd(inipath, MAX_PATH);
+	report(L"    Looking for vld.ini in %s\n", inipath);
+
     if (_wstat(L".\\vld.ini", &s) == 0) {
         // Found a copy of vld.ini in the working directory. Use it.
         wcsncpy_s(inipath, MAX_PATH, L".\\vld.ini", _TRUNCATE);
@@ -784,7 +801,12 @@ VOID VisualLeakDetector::configure ()
         m_options |= VLD_OPT_TRACE_INTERNAL_FRAMES;
     }
 
-    // Read the integer configuration options.
+    GetPrivateProfileString(L"Options", L"NoThreadWait", L"", buffer, BSIZE, inipath);
+    if (strtobool(buffer) == TRUE) {
+        m_options |= VLD_OPT_NO_THREAD_WAIT;
+    }
+
+	// Read the integer configuration options.
     m_maxdatadump = GetPrivateProfileInt(L"Options", L"MaxDataDump", VLD_DEFAULT_MAX_DATA_DUMP, inipath);
     m_maxtraceframes = GetPrivateProfileInt(L"Options", L"MaxTraceFrames", VLD_DEFAULT_MAX_TRACE_FRAMES, inipath);
     if (m_maxtraceframes < 1) {

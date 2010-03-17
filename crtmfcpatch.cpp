@@ -27,6 +27,22 @@
 
 extern VisualLeakDetector vld;
 
+Map<LPCTSTR, HMODULE> hmoduleMap;
+
+HMODULE GetModuleHandleWithCache(
+  LPCTSTR lpModuleName
+)
+{
+	Map<LPCTSTR, HMODULE>::Iterator iter;
+	iter = hmoduleMap.find(lpModuleName);
+	if (iter != hmoduleMap.end())
+		return (*iter).second;
+	
+	HMODULE moduleHandle = GetModuleHandle(lpModuleName);
+	hmoduleMap.insert(lpModuleName, moduleHandle);
+	return moduleHandle;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // Visual Studio 2005 DLLs
@@ -61,7 +77,7 @@ void* crt80d__calloc_dbg (size_t num, size_t size, int type, char const *file, i
     if (pcrt80d__calloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _malloc_dbg.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d__calloc_dbg = (_calloc_dbg_t)GetProcAddress(msvcr80d, "_calloc_dbg");
     }
 
@@ -96,7 +112,7 @@ void* crt80d__malloc_dbg (size_t size, int type, char const *file, int line)
     if (pcrt80d__malloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _malloc_dbg.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d__malloc_dbg = (_malloc_dbg_t)GetProcAddress(msvcr80d, "_malloc_dbg");
     }
 
@@ -133,7 +149,7 @@ void* crt80d__realloc_dbg (void *mem, size_t size, int type, char const *file, i
     if (pcrt80d__realloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _realloc_dbg.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d__realloc_dbg = (_realloc_dbg_t)GetProcAddress(msvcr80d, "_realloc_dbg");
     }
 
@@ -168,7 +184,7 @@ void* crt80d__scalar_new_dbg (unsigned int size, int type, char const *file, int
     if (pcrt80d__scalar_new_dbg == NULL) {
         // This is the first call to this function. Link to the real CRT debug
         // new operator.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d__scalar_new_dbg = (new_dbg_crt_t)GetProcAddress(msvcr80d, "??2@YAPAXIHPBDH@Z");
     }
 
@@ -203,7 +219,7 @@ void* crt80d__vector_new_dbg (unsigned int size, int type, char const *file, int
     if (pcrt80d__vector_new_dbg == NULL) {
         // This is the first call to this function. Link to the real CRT debug
         // new operator.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d__vector_new_dbg = (new_dbg_crt_t)GetProcAddress(msvcr80d, "??_U@YAPAXIHPBDH@Z");
     }
 
@@ -232,7 +248,7 @@ void* crt80d_calloc (size_t num, size_t size)
 
     if (pcrt80d_calloc == NULL) {
         // This is the first call to this function. Link to the real malloc.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d_calloc = (calloc_t)GetProcAddress(msvcr80d, "calloc");
     }
 
@@ -259,7 +275,7 @@ void* crt80d_malloc (size_t size)
 
     if (pcrt80d_malloc == NULL) {
         // This is the first call to this function. Link to the real malloc.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d_malloc = (malloc_t)GetProcAddress(msvcr80d, "malloc");
     }
 
@@ -288,7 +304,7 @@ void* crt80d_realloc (void *mem, size_t size)
 
     if (pcrt80d_realloc == NULL) {
         // This is the first call to this function. Link to the real realloc.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d_realloc = (realloc_t)GetProcAddress(msvcr80d, "realloc");
     }
 
@@ -316,7 +332,7 @@ void* crt80d_scalar_new (unsigned int size)
     if (pcrt80d_scalar_new == NULL) {
         // This is the first call to this function. Link to the real CRT new
         // operator.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d_scalar_new = (new_t)GetProcAddress(msvcr80d, "??2@YAPAXI@Z");
     }
 
@@ -344,7 +360,7 @@ void* crt80d_vector_new (unsigned int size)
     if (pcrt80d_vector_new == NULL) {
         // This is the first call to this function. Link to the real CRT new
         // operator.
-        msvcr80d = GetModuleHandle(L"msvcr80d.dll");
+        msvcr80d = GetModuleHandleWithCache(L"msvcr80d.dll");
         pcrt80d_vector_new = (new_t)GetProcAddress(msvcr80d, "??_U@YAPAXI@Z");
     }
 
@@ -386,7 +402,7 @@ void* crt90d__calloc_dbg (size_t num, size_t size, int type, char const *file, i
     if (pcrt90d__calloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _malloc_dbg.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d__calloc_dbg = (_calloc_dbg_t)GetProcAddress(msvcr90d, "_calloc_dbg");
     }
 
@@ -421,7 +437,7 @@ void* crt90d__malloc_dbg (size_t size, int type, char const *file, int line)
     if (pcrt90d__malloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _malloc_dbg.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d__malloc_dbg = (_malloc_dbg_t)GetProcAddress(msvcr90d, "_malloc_dbg");
     }
 
@@ -458,7 +474,7 @@ void* crt90d__realloc_dbg (void *mem, size_t size, int type, char const *file, i
     if (pcrt90d__realloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _realloc_dbg.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d__realloc_dbg = (_realloc_dbg_t)GetProcAddress(msvcr90d, "_realloc_dbg");
     }
 
@@ -493,7 +509,7 @@ void* crt90d__scalar_new_dbg (unsigned int size, int type, char const *file, int
     if (pcrt90d__scalar_new_dbg == NULL) {
         // This is the first call to this function. Link to the real CRT debug
         // new operator.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d__scalar_new_dbg = (new_dbg_crt_t)GetProcAddress(msvcr90d, "??2@YAPAXIHPBDH@Z");
     }
 
@@ -528,7 +544,7 @@ void* crt90d__vector_new_dbg (unsigned int size, int type, char const *file, int
     if (pcrt90d__vector_new_dbg == NULL) {
         // This is the first call to this function. Link to the real CRT debug
         // new operator.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d__vector_new_dbg = (new_dbg_crt_t)GetProcAddress(msvcr90d, "??_U@YAPAXIHPBDH@Z");
     }
 
@@ -557,7 +573,7 @@ void* crt90d_calloc (size_t num, size_t size)
 
     if (pcrt90d_calloc == NULL) {
         // This is the first call to this function. Link to the real malloc.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d_calloc = (calloc_t)GetProcAddress(msvcr90d, "calloc");
     }
 
@@ -584,7 +600,7 @@ void* crt90d_malloc (size_t size)
 
     if (pcrt90d_malloc == NULL) {
         // This is the first call to this function. Link to the real malloc.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d_malloc = (malloc_t)GetProcAddress(msvcr90d, "malloc");
     }
 
@@ -613,7 +629,7 @@ void* crt90d_realloc (void *mem, size_t size)
 
     if (pcrt90d_realloc == NULL) {
         // This is the first call to this function. Link to the real realloc.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d_realloc = (realloc_t)GetProcAddress(msvcr90d, "realloc");
     }
 
@@ -641,7 +657,7 @@ void* crt90d_scalar_new (unsigned int size)
     if (pcrt90d_scalar_new == NULL) {
         // This is the first call to this function. Link to the real CRT new
         // operator.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d_scalar_new = (new_t)GetProcAddress(msvcr90d, "??2@YAPAXI@Z");
     }
 
@@ -669,7 +685,7 @@ void* crt90d_vector_new (unsigned int size)
     if (pcrt90d_vector_new == NULL) {
         // This is the first call to this function. Link to the real CRT new
         // operator.
-        msvcr90d = GetModuleHandle(L"msvcr90d.dll");
+        msvcr90d = GetModuleHandleWithCache(L"msvcr90d.dll");
         pcrt90d_vector_new = (new_t)GetProcAddress(msvcr90d, "??_U@YAPAXI@Z");
     }
 
@@ -713,7 +729,7 @@ void* crtd__calloc_dbg (size_t num, size_t size, int type, char const *file, int
     if (pcrtd__calloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _malloc_dbg.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd__calloc_dbg = (_calloc_dbg_t)GetProcAddress(msvcrtd, "_calloc_dbg");
     }
 
@@ -748,7 +764,7 @@ void* crtd__malloc_dbg (size_t size, int type, char const *file, int line)
     if (pcrtd__malloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _malloc_dbg.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd__malloc_dbg = (_malloc_dbg_t)GetProcAddress(msvcrtd, "_malloc_dbg");
     }
 
@@ -785,7 +801,7 @@ void* crtd__realloc_dbg (void *mem, size_t size, int type, char const *file, int
     if (pcrtd__realloc_dbg == NULL) {
         // This is the first call to this function. Link to the real
         // _realloc_dbg.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd__realloc_dbg = (_realloc_dbg_t)GetProcAddress(msvcrtd, "_realloc_dbg");
     }
 
@@ -820,7 +836,7 @@ void* crtd__scalar_new_dbg (unsigned int size, int type, char const *file, int l
     if (pcrtd__scalar_new_dbg == NULL) {
         // This is the first call to this function. Link to the real CRT debug
         // scalar new operator.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd__scalar_new_dbg = (new_dbg_crt_t)GetProcAddress(msvcrtd, "??2@YAPAXIHPBDH@Z");
     }
 
@@ -855,7 +871,7 @@ void* crtd__vector_new_dbg (unsigned int size, int type, char const *file, int l
     if (pcrtd__vector_new_dbg == NULL) {
         // This is the first call to this function. Link to the real CRT debug
         // vector new operator.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd__vector_new_dbg = (new_dbg_crt_t)GetProcAddress(msvcrtd, "??_U@YAPAXIHPBDH@Z");
     }
 
@@ -884,7 +900,7 @@ void* crtd_calloc (size_t num, size_t size)
 
     if (pcrtd_calloc == NULL) {
         // This is the first call to this function. Link to the real malloc.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd_calloc = (calloc_t)GetProcAddress(msvcrtd, "calloc");
     }
 
@@ -911,7 +927,7 @@ void* crtd_malloc (size_t size)
 
     if (pcrtd_malloc == NULL) {
         // This is the first call to this function. Link to the real malloc.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd_malloc = (malloc_t)GetProcAddress(msvcrtd, "malloc");
     }
 
@@ -940,7 +956,7 @@ void* crtd_realloc (void *mem, size_t size)
 
     if (pcrtd_realloc == NULL) {
         // This is the first call to this function. Link to the real realloc.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd_realloc = (realloc_t)GetProcAddress(msvcrtd, "realloc");
     }
 
@@ -968,7 +984,7 @@ void* crtd_scalar_new (unsigned int size)
     if (pcrtd_scalar_new == NULL) {
         // This is the first call to this function. Link to the real CRT scalar
         // new operator.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd_scalar_new = (new_t)GetProcAddress(msvcrtd, "??2@YAPAXI@Z");
     }
 
@@ -996,7 +1012,7 @@ void* crtd_vector_new (unsigned int size)
     if (pcrtd_vector_new == NULL) {
         // This is the first call to this function. Link to the real CRT vector
         // new operator.
-        msvcrtd = GetModuleHandle(L"msvcrtd.dll");
+        msvcrtd = GetModuleHandleWithCache(L"msvcrtd.dll");
         pcrtd_vector_new = (new_t)GetProcAddress(msvcrtd, "??_U@YAPAXI@Z");
     }
 
@@ -1036,7 +1052,7 @@ void* mfc42d__scalar_new_dbg (unsigned int size, char const *file, int line)
     if (pmfc42d__scalar_new_dbg == NULL) {
         // This is the first call to this function. Link to the real MFC debug
         // new operator.
-        mfc42d = GetModuleHandle(L"mfc42d.dll");
+        mfc42d = GetModuleHandleWithCache(L"mfc42d.dll");
         pmfc42d__scalar_new_dbg = (new_dbg_mfc_t)GetProcAddress(mfc42d, (LPCSTR)714);
     }
 
@@ -1064,7 +1080,7 @@ void* mfc42d_scalar_new (unsigned int size)
     if (pmfc42d_scalar_new == NULL) {
         // This is the first call to this function. Link to the real MFC new
         // operator.
-        mfc42d = GetModuleHandle(L"mfc42d.dll");
+        mfc42d = GetModuleHandleWithCache(L"mfc42d.dll");
         pmfc42d_scalar_new = (new_t)GetProcAddress(mfc42d, (LPCSTR)711);
     }
 
@@ -1103,7 +1119,7 @@ new_dbg_mfc_t  pmfc80d__scalar_new_dbg = NULL;
     if (pmfc80d__scalar_new_dbg == NULL) {
         // This is the first call to this function. Link to the real MFC debug
         // new operator.
-        mfc80d = GetModuleHandle(L"mfc80d.dll");
+        mfc80d = GetModuleHandleWithCache(L"mfc80d.dll");
         pmfc80d__scalar_new_dbg = (new_dbg_mfc_t)GetProcAddress(mfc80d, (LPCSTR)895);
     }
 
@@ -1135,7 +1151,7 @@ new_dbg_mfc_t  pmfc80d__vector_new_dbg = NULL;
     if (pmfc80d__vector_new_dbg == NULL) {
         // This is the first call to this function. Link to the real MFC debug
         // new operator.
-        mfc80d = GetModuleHandle(L"mfc80d.dll");
+        mfc80d = GetModuleHandleWithCache(L"mfc80d.dll");
         pmfc80d__vector_new_dbg = (new_dbg_mfc_t)GetProcAddress(mfc80d, (LPCSTR)269);
     }
 
@@ -1163,7 +1179,7 @@ void* mfc80d_scalar_new (unsigned int size)
     if (pmfc80d_scalar_new == NULL) {
         // This is the first call to this function. Link to the real MFC 8.0 new
         // operator.
-        mfc80d = GetModuleHandle(L"mfc80d.dll");
+        mfc80d = GetModuleHandleWithCache(L"mfc80d.dll");
         pmfc80d_scalar_new = (new_t)GetProcAddress(mfc80d, (LPCSTR)893);
     }
 
@@ -1191,7 +1207,7 @@ void* mfc80d_vector_new (unsigned int size)
     if (pmfc80d_vector_new == NULL) {
         // This is the first call to this function. Link to the real MFC 8.0 new
         // operator.
-        mfc80d = GetModuleHandle(L"mfc80d.dll");
+        mfc80d = GetModuleHandleWithCache(L"mfc80d.dll");
         pmfc80d_vector_new = (new_t)GetProcAddress(mfc80d, (LPCSTR)267);
     }
 
@@ -1231,7 +1247,7 @@ void* mfc90d__scalar_new_dbg (unsigned int size, char const *file, int line)
     if (pmfc90d__scalar_new_dbg == NULL) {
         // This is the first call to this function. Link to the real MFC debug
         // new operator.
-        mfc90d = GetModuleHandle(L"mfc90d.dll");
+        mfc90d = GetModuleHandleWithCache(L"mfc90d.dll");
         pmfc90d__scalar_new_dbg = (new_dbg_mfc_t)GetProcAddress(mfc90d, (LPCSTR)933);
     }
 
@@ -1264,7 +1280,7 @@ void* mfc90d__vector_new_dbg (unsigned int size, char const *file, int line)
     if (pmfc90d__vector_new_dbg == NULL) {
         // This is the first call to this function. Link to the real MFC debug
         // new operator.
-        mfc90d = GetModuleHandle(L"mfc90d.dll");
+        mfc90d = GetModuleHandleWithCache(L"mfc90d.dll");
         pmfc90d__vector_new_dbg = (new_dbg_mfc_t)GetProcAddress(mfc90d, (LPCSTR)269);
     }
 
@@ -1292,7 +1308,7 @@ void* mfc90d_scalar_new (unsigned int size)
     if (pmfc90d_scalar_new == NULL) {
         // This is the first call to this function. Link to the real MFC 8.0 new
         // operator.
-        mfc90d = GetModuleHandle(L"mfc90d.dll");
+        mfc90d = GetModuleHandleWithCache(L"mfc90d.dll");
         pmfc90d_scalar_new = (new_t)GetProcAddress(mfc90d, (LPCSTR)931);
     }
 
@@ -1320,7 +1336,7 @@ void* mfc90d_vector_new (unsigned int size)
     if (pmfc90d_vector_new == NULL) {
         // This is the first call to this function. Link to the real MFC 8.0 new
         // operator.
-        mfc90d = GetModuleHandle(L"mfc90d.dll");
+        mfc90d = GetModuleHandleWithCache(L"mfc90d.dll");
         pmfc90d_vector_new = (new_t)GetProcAddress(mfc90d, (LPCSTR)267);
     }
 
